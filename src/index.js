@@ -2,6 +2,7 @@ import express, { json } from "express";
 import { connectDB } from "./config/db.js";
 import { envObj } from "./config/envConfig.js";
 import productRoute from "./routes/product.js";
+import userRoute from "./routes/user.js";
 
 const app = express();
 app.use(json());
@@ -90,6 +91,7 @@ const product = [
 ];
 
 app.use("/products", productRoute);
+app.use("/auth", userRoute);
 
 app.get("/", (req, res) => {
   res.send("Hello, welcome to August app");

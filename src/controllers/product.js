@@ -33,3 +33,24 @@ export const getAllProduct = async (req, res) => {
     res.status(400).json({ status: false, message: error.message });
   }
 };
+
+export const getSingleProduct = async (req, res) => {
+  try {
+    console.log(req.params);
+
+    const id = req.params.id;
+    const product = await Product.findById(id);
+    if (!product) {
+      return res
+        .status(404)
+        .json({ status: false, message: "Product not Found" });
+    }
+
+    return res
+      .status(200)
+      .json({ status: true, message: "Fetch Product Successfully", product });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ status: false, message: error.message });
+  }
+};
