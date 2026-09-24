@@ -76,3 +76,19 @@ export const login = async (req, res) => {
     return res.status(400).json({ status: false, message: error.message });
   }
 };
+
+export const authMe = async (req, res) => {
+  try {
+    const userId = req.user;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ status: false, message: "user not Found" });
+    }
+    return res
+      .status(200)
+      .json({ status: true, message: "successfully", user: userODM(user) });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ status: false, message: error.message });
+  }
+};
