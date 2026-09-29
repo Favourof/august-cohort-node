@@ -14,6 +14,7 @@ export const jwtValidator = async (req, res, next) => {
     try {
       const decoded = await jwt.verify(token, envObj.jwtSecret);
       req.user = decoded.userId;
+      
       //   console.log(decoded);
     } catch (error) {
       console.log(error);

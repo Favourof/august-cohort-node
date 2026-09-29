@@ -92,3 +92,5 @@ export const authMe = async (req, res) => {
     res.status(400).json({ status: false, message: error.message });
   }
 };
+
+// this is what I added to favour branch
