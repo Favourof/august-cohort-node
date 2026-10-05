@@ -3,9 +3,16 @@ import { connectDB } from "./config/db.js";
 import { envObj } from "./config/envConfig.js";
 import productRoute from "./routes/product.js";
 import userRoute from "./routes/user.js";
+import cors from "cors";
 
 const app = express();
+
 app.use(json());
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://localhost:5174"],
+  }),
+);
 
 const product = [
   {
