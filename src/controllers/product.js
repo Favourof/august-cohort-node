@@ -1,6 +1,9 @@
 import Product from "../models/product.js";
 
 export const addProduct = async (req, res) => {
+  const file = req.file;
+  console.log(file);
+
   try {
     const { title, description, price, category, image, stock } = req.body;
     if (!title || !description || !price || !category || !image || !stock) {
