@@ -1,0 +1,125 @@
+{
+  "info": {
+    "_postman_id": "ced8e73a-9377-430d-bc6f-f66c02744408",
+    "name": "August Server API",
+    "description": {
+      "content": "# August Server API\n\nREST API for user authentication and product management. The API is an Express application backed by MongoDB.\n\n## Quick start\n\n1. Start the API; the default server port is configured by `PORT` (commonly `4000`).\n2. Set `base_url` to the API origin, for example `http://localhost:4000`.\n3. Run **Auth → Register**, then **Auth → Login**. Login stores the returned JWT in the `token` collection variable.\n4. Run **Auth → Auth me** to verify the token.\n5. Run **Product → Add Product** or **Product → Get all Products**. Get all Products stores a returned ID in `productId`.\n\n## Authentication\n\nOnly `GET /auth/me` is protected. Send the JWT as `Authorization: Bearer <token>`. The token expires according to the server's `EXPIRE_IN` environment variable.\n\n## Common responses\n\nSuccess responses include `status: true`, a `message`, and endpoint-specific data. Errors include `status: false` and `message`. Validation and application errors currently use HTTP 400; missing authentication uses 401; missing resources use 404.\n\n## Notes\n\n- Product creation uses `multipart/form-data` and requires an image.\n- Product categories are `phone`, `laptop`, `tab`, and `power bank`.\n- Do not commit real credentials, JWTs, or production URLs to this collection.",
+      "type": "text/markdown"
+    },
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "33609178"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:4000", "type": "string" },
+    { "key": "token", "value": "", "type": "string" },
+    { "key": "productId", "value": "", "type": "string" },
+    { "key": "image_path", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Product",
+      "description": "Product catalog endpoints. Product creation uploads one image to Cloudinary and stores the resulting secure URL.",
+      "item": [
+        {
+          "name": "Add Product",
+          "request": {
+            "method": "POST",
+            "description": {
+              "content": "Creates a product with `multipart/form-data`. The image is required and is uploaded to Cloudinary.\n\n**Fields**\n\n- `title`: string, 3–30 characters\n- `description`: string, 12–120 characters\n- `price`: number, 100–1,000,000\n- `category`: `phone`, `laptop`, `tab`, or `power bank`\n- `stock`: number, 0 or greater\n- `image`: one image file\n\nReturns `201` with the created product, including generated `image`, `imageId`, `_id`, and timestamps. This route does not currently require JWT authentication.",
+              "type": "text/markdown"
+            },
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "title", "value": "The laptop", "type": "text", "description": "3–30 characters." },
+                { "key": "description", "value": "A reliable laptop for everyday work and study.", "type": "text", "description": "12–120 characters." },
+                { "key": "price", "value": "102000", "type": "text", "description": "Number between 100 and 1000000." },
+                { "key": "category", "value": "laptop", "type": "text", "description": "phone, laptop, tab, or power bank." },
+                { "key": "stock", "value": "2", "type": "text", "description": "Non-negative quantity." },
+                { "key": "image", "type": "file", "src": "{{image_path}}", "description": "Image uploaded to Cloudinary." }
+              ]
+            },
+            "url": { "raw": "{{base_url}}/products/", "host": ["{{base_url}}"], "path": ["products", ""] }
+          },
+          "response": []
+        },
+        {
+          "name": "Get all Products",
+          "request": {
+            "method": "GET",
+            "description": {
+              "content": "Returns every product in the database. No query parameters are currently supported.\n\n**Success `200`** returns the records in `product` and the number of records in `productLength`.",
+              "type": "text/markdown"
+            },
+            "header": [],
+            "url": { "raw": "{{base_url}}/products", "host": ["{{base_url}}"], "path": ["products"] }
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Response is successful', function () { pm.expect(pm.response.code).to.eql(200); });", "const response = pm.response.json();", "pm.test('Response contains a product array', function () { pm.expect(response.product).to.be.an('array'); });", "if (response.product && response.product.length > 0 && response.product[0]._id) { pm.collectionVariables.set('productId', response.product[0]._id); }"] } }],
+          "response": []
+        },
+        {
+          "name": "Get Single Product",
+          "request": {
+            "method": "GET",
+            "description": {
+              "content": "Returns one product by MongoDB ObjectId. Set `productId` manually or run **Get all Products** first.\n\n`200` returns the product in `product`; `404` means the product does not exist; malformed IDs currently return `400`.",
+              "type": "text/markdown"
+            },
+            "header": [],
+            "url": { "raw": "{{base_url}}/products/{{productId}}", "host": ["{{base_url}}"], "path": ["products", "{{productId}}"] }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "description": "Account registration, login, and the authenticated current-user endpoint.",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "description": {
+              "content": "Creates a user account. Passwords are hashed before storage.\n\n**Required JSON**: `firstName`, `lastName`, `email`, `password`. Names must be 3–30 characters; password must be at least 8 characters; email must be valid and unique.\n\n`201` returns a sanitized `user` object. Duplicate or invalid input returns `400`.",
+              "type": "text/markdown"
+            },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"firstName\": \"Ayo\",\n  \"lastName\": \"Bayo\",\n  \"email\": \"user@example.com\",\n  \"password\": \"12345678\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{base_url}}/auth/register", "host": ["{{base_url}}"], "path": ["auth", "register"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "description": {
+              "content": "Authenticates a registered user.\n\n**Required JSON**: `email` and `password`.\n\n`200` returns a sanitized `user` object and a JWT in `token`. The test script saves the token to `token`, which **Auth me** uses automatically. Invalid credentials return `400`.",
+              "type": "text/markdown"
+            },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"12345678\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Login is successful', function () { pm.expect(pm.response.code).to.eql(200); });", "const response = pm.response.json();", "pm.test('Response contains a token', function () { pm.expect(response.token).to.be.a('string').and.not.empty; });", "if (response.token) { pm.collectionVariables.set('token', response.token); }"] } }],
+          "response": []
+        },
+        {
+          "name": "Auth me",
+          "request": {
+            "method": "GET",
+            "description": {
+              "content": "Returns the currently authenticated user's profile. Requires a valid JWT from Login.\n\nAuthorization: `Bearer {{token}}`\n\n`200` returns the sanitized user in `user`; missing tokens return `401`; invalid or expired tokens return `400`; a deleted user returns `404`.",
+              "type": "text/markdown"
+            },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }],
+            "url": { "raw": "{{base_url}}/auth/me", "host": ["{{base_url}}"], "path": ["auth", "me"] }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
