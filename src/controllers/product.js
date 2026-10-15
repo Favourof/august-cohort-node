@@ -1,24 +1,22 @@
 import cloudinary from "../config/cloudinary.js";
 import Product from "../models/product.js";
+import { validationResult } from "express-validator";
 
 export const addProduct = async (req, res) => {
   const file = req.files || req.file;
   console.log(file);
 
+  const error = validationResult(req);
+  // console.log(error);
+
+  if (!error.isEmpty()) {
+    console.log(error.errors);
+
+    return res.send({ error: error.errors?.[0].msg });
+  }
+
   try {
     const { title, description, price, category, stock } = req.body;
-    if (
-      !title ||
-      !description ||
-      price === undefined ||
-      !category ||
-      !file ||
-      stock === undefined
-    ) {
-      return res
-        .status(401)
-        .json({ status: false, message: " ALl field are Required" });
-    }
 
     const result = await new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
