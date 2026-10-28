@@ -14,7 +14,7 @@ export const addProduct = async (req, res) => {
   if (!error.isEmpty()) {
     console.log(error.errors);
 
-    return res.send({ error: error.errors?.[0].msg });
+    return res.status(400).json({ error: error.errors?.[0].msg });
   }
 
   try {

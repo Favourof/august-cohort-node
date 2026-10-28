@@ -9,4 +9,6 @@ export const envObj = {
   cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME,
   cloudinaryApiKey: process.env.CLOUDINARY_API_KEY,
   cloudinaryApiSecret: process.env.CLOUDINARY_SECRET_KEY,
+  gmailAddress: process.env.GMAIL_ADDRESS,
+  gmailAppPassword: process.env.GMAIL_APP_PASSWORD,
 };

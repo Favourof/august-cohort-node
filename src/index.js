@@ -4,6 +4,7 @@ import { envObj } from "./config/envConfig.js";
 import productRoute from "./routes/product.js";
 import userRoute from "./routes/user.js";
 import cors from "cors";
+import { verifyTransporter } from "./utils/nodemailer.js";
 
 const app = express();
 
@@ -132,7 +133,7 @@ app.get("/", (req, res) => {
 //     length: product.length,
 //   });
 // });
-
+verifyTransporter();
 connectDB();
 app.listen(envObj.port, () => {
   console.log("app is running on port 4000");

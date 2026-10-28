@@ -3,6 +3,9 @@ import bcrypt from "bcrypt";
 import { userODM } from "../utils/userODM.js";
 import jwt from "jsonwebtoken";
 import { envObj } from "../config/envConfig.js";
+import { hashToken } from "../helper/hashToken.js";
+import BlackList from "../models/blackList.js";
+import { sendMail } from "../utils/nodemailer.js";
 
 export const register = async (req, res) => {
   try {
@@ -23,6 +26,11 @@ export const register = async (req, res) => {
     const hashPassword = await bcrypt.hash(password, saltRound);
 
     const newUser = await User.create({ ...req.body, password: hashPassword });
+    sendMail({
+      email,
+      subject: `Welcome ${firstName}`,
+      body: `Hi ${firstName}, Welcome to our Website`,
+    });
 
     return res.status(201).json({
       status: true,
@@ -77,8 +85,6 @@ export const login = async (req, res) => {
   }
 };
 
-
-
 export const authMe = async (req, res) => {
   try {
     const userId = req.user;
@@ -92,6 +98,35 @@ export const authMe = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(400).json({ status: false, message: error.message });
+  }
+};
+
+export const logOut = async (req, res) => {
+  try {
+    const expiresAt = new Date(req.tokenExpiresAt * 1000);
+
+    if (expiresAt > new Date()) {
+      const tokenHash = hashToken(req.authToken);
+
+      await BlackList.updateOne(
+        { tokenHash },
+        {
+          $setOnInsert: {
+            user: req.user,
+            tokenHash,
+            expiresAt,
+          },
+        },
+        { upsert: true },
+      );
+    }
+
+    return res
+      .status(200)
+      .json({ status: true, message: "Logged out successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ status: false, message: error.message });
   }
 };
 
